@@ -1,0 +1,136 @@
+---
+title: "Pain Discrimination and Learning: Linear Mixed Models"
+author: "Fabrice Hubschmid"
+date: "2024-01-16"
+output: html_document
+---
+
+### Set-Up
+
+```{r setup, echo=FALSE}
+suppressMessages(suppressWarnings(library(ggplot2)))
+suppressMessages(suppressWarnings(library(ggeffects)))
+suppressMessages(suppressWarnings(library(GGally)))
+suppressMessages(suppressWarnings(library(lme4)))
+suppressMessages(suppressWarnings(library(boot)))
+suppressMessages(suppressWarnings(library(lattice)))
+suppressMessages(suppressWarnings(library(lmerTest)))
+suppressMessages(suppressWarnings(library(effects)))
+suppressMessages(suppressWarnings(library(car)))
+suppressMessages(suppressWarnings(library(tictoc)))
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(emmeans)))
+suppressMessages(suppressWarnings(library(broom.mixed)))
+suppressMessages(suppressWarnings(library(multcomp)))
+getwd()
+```
+
+### Data import
+
+```{r, echo=FALSE}
+data <- read.csv("PDL_data_discrimination_all.csv", header = T, sep = ";")
+data$subj_idx<-factor(data$subj_idx)
+data$stim<-factor(data$stim)
+data$reward<-factor(data$reward)
+data$reward<-relevel(data$reward,ref="NR")
+data$response<-factor(data$response)
+levels(data$reward)<-c("no reward", "contingent", "non-contingent")
+levels(data$stim)<-c("+0°C", "+0.2°C", "+0.4°C")
+```
+
+```{r}
+str(data)
+```
+### Collumns:  
+01 -> subj_idx (unique subject ID)  
+02 -> participant_log (initial subject name before renaming to HDDM convention)  
+03 -> session_number_log(what session it was (only 1))  
+04 -> trial_number  
+05 -> condition_log (logged temperature pulse condition)  
+06 -> stim (renamed pulse conditions (control 0°C, difficult 0.2°C, easy 0.4°C))  
+07 -> split_by (used for the RL models)  
+08 -> reward (trial allocation to reward condition)  
+09 -> answer_log (answered logged by the computer)  
+10 -> choice_code (coding of stimulus choice to 1 = yes / 0 = no)  
+11 -> response (coding of discrimination accuracy to 1 = correct / 0 = false)  
+12 -> rt (reaction time)  
+13 -> contingency (participant allocation to reward group)  
+14 -> reinforcement (wether there was reinforcement in each trial)  
+15 -> feedback (reward feedback to 1 = received / 0 = no reward received)  
+16 -> q.init (used for the initialization of Q values in the RL models)  
+17 -> cumulative_reward (cummulation of monetary rewards during session)  
+18 -> predeterminedlist (use of a predetermined reward schedule (see non-contingent))  
+19 -> prop (proportion of accurate discrimination averaged over pulse and reward (only used for plotting))
+
+## Mixed Logistic Regression: Detection Accuracy
+
+Models a random intercept only with no interaction assumed
+
+```{r}
+tic()
+MLR1.intercept <- glmer(response ~ stim + reward + (1|subj_idx), data = data, family = binomial(link='logit'))
+toc()
+MLR1.intercept%>%summary()
+```
+
+### Confidence intervals of the fixed effects:
+
+```{r}
+tic()
+confint(MLR1.intercept)
+toc()
+```
+
+### Odds ratios associated with the fixed effects:
+
+```{r}
+tidy(MLR1.intercept,conf.int=TRUE,exponentiate=TRUE,effects="fixed")
+```
+
+### Contrast comparisons averaged over pulse condition
+
+```{r}
+(MLR1.intercept_post_hoc_rewards <- pairs(emmeans(MLR1.intercept, ~ reward,type="response"))%>%test())
+```
+
+### Contrast comparisons averaged over reward conditions
+
+```{r}
+(MLR1.intercept_post_hoc_pulses <- pairs(emmeans(MLR1.intercept, ~ stim,type="response"))%>%test())
+```
+
+## Linear Mixed Model: Reaction Times
+
+Models a random intercept only with no interaction assumed
+
+```{r}
+tic()
+LMM2.intercept <- lmer(rt~ stim + reward + (1| subj_idx), data = data)
+summary(LMM2.intercept)
+toc()
+```
+
+### Confidence intervals of the fixed effects:
+
+```{r}
+tic()
+confint(LMM2.intercept)
+toc()
+```
+### Contrast comparisons averaged over pulse condition
+
+```{r}
+suppressMessages(
+(LMM2.intercept_post_hoc_rewards <- pairs(emmeans(LMM2.intercept, ~ reward,type="rt"))%>%test())
+)
+```
+
+### Contrast comparisons averaged over reward conditions
+
+```{r}
+suppressMessages(
+(MLR1.intercept_post_hoc_pulses <- pairs(emmeans(MLR1.intercept, ~ stim,type="response"))%>%test())
+)
+```
+
+End...

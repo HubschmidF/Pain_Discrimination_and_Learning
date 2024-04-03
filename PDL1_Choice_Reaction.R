@@ -98,7 +98,7 @@ levels(data$Reward)
 pl3 <- ggplot(data, aes(x=Pulse, y=rt, fill=Reward)) +
               geom_boxplot(notch = T, outlier.size = 1.5) +
               labs(y = "Reaction time", x = "Pulse condition") +
-              scale_fill_manual(values=c('blue', "chocolate1", "forestgreen"))+
+              scale_fill_manual(values=c('blue', "chocolate1", "forestgreen")) +
               theme_classic()  +
               theme(legend.position='none')
 pl3
@@ -108,7 +108,7 @@ pl3
 pl4 <- ggplot(data, aes(x=Pulse, y=prop, fill=Reward)) +
               geom_boxplot(notch = T, outlier.size = 1.5) +
               labs(y = "Prop. of Correct Choices", x = "Pulse condition") +
-              scale_fill_manual(values=c("blue", "chocolate1", "forestgreen"))+
+              scale_fill_manual(values=c("blue", "chocolate1", "forestgreen")) +
               theme_classic()  +
               theme(legend.position='none')
 pl4
