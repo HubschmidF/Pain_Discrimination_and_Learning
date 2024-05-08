@@ -4,5 +4,5 @@ Software scripts used for the analysis of the SNSF-PRIMA project 1 and results r
 from Fabrice Hubschmid, Melissa Luna Flury, Martin Loeffler, Simon Desch and Susanne Becker.
 
 ## Data availability
-Task dataset and HDDM sampling outputs can be found at (OSF REP)
+Task dataset and HDDM sampling outputs can be found at ([OSF REP](https://osf.io/4sw7y/))
 
